@@ -1,0 +1,65 @@
+Phase 1 
+1. Created a simulator file 
+2. Created resource group
+3. Created Event Hubs Namespace
+4. Created Event Hubs
+5. Noted required creds from Event Hub and ran the python simulator file 
+
+-- data stored went to event hub successfully --
+
+Phase 2
+1. Created databricks resource, compute and then bronze, silver, gold python notebooks
+2. Created Storage account and 3 containers: bronze, silver, gold
+3. Established connectivity and read data in kafka format inside databricks bronze notebooks
+
+Bronze Layer:
+ - configured kafka inside the notebook
+ - read raw data 
+ - casted into json
+  - wrote the stream to bronze container
+4. Created keyvault and performed role assignment
+5. Created secrets to store them safely in key vault
+
+Silver Layer Data Cleaning & Transformation:
+- Configured Azure Data Lake Storage (ADLS) access using Spark configuration.
+- Read streaming patient data from the Bronze Delta table.
+- Defined a structured schema for patient event records.
+- Parsed raw JSON data into individual columns using from_json().
+- Converted admission_time and discharge_time from string format to timestamp format.
+- Performed data quality validation:
+- Replaced invalid or future admission timestamps with the current timestamp.
+- Corrected invalid ages (>100) by assigning realistic random values.
+- Implemented schema evolution handling:
+- Checked for missing expected columns.
+- Added missing columns with null values to maintain schema consistency.
+- Wrote cleaned and standardized data into the Silver Delta table.
+- Enabled checkpointing for fault tolerance and exactly-once stream processing.
+- Used Structured Streaming to continuously process incoming hospital patient events in real time.
+
+
+Gold Layer – Data Warehouse Modeling
+- Read cleaned patient data from the Silver Delta table.
+- Applied window functions to keep only the latest patient admission record.
+- Removed duplicate patient records before loading dimensions.
+
+Patient Dimension (SCD Type 2)
+- Created a Patient Dimension table with surrogate keys.
+- Implemented Slowly Changing Dimension (SCD Type 2) logic.
+- Generated hashes to detect changes in patient attributes (gender, age).
+- Expired old records when changes were detected.
+- Inserted new versions of patient records while maintaining history.
+
+6. Created a Department Dimension table.
+7. Built a Fact Patient Flow table from Silver-layer events.
+8. Created a star schema structure suitable for BI reporting.
+9. Business Metrics Calculated
+- Calculated Length of Stay (LOS) in hours.
+- Derived Currently Admitted Flag.
+- Added Admission Date for time-based analysis.
+- Captured Event Ingestion Timestamp for auditability.
+
+10. Stored all Gold tables in Delta Lake format.
+11. Partitioned fact data for faster querying and reporting.
+12. Performed sanity checks and row-count validations.
+
+-- Medallian Architecture achieved --
