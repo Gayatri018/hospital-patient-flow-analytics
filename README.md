@@ -99,6 +99,8 @@ The **Gold layer** data in Synapse follows a **star schema** for optimized analy
   - `DimDepartment` – Department details
   - `DimPatient` – Patient demographic info
   - `DimTime` – Date and time dimension
+  - 
+<img width="1282" height="724" alt="Screenshot 2025-08-30 155951" src="./powerbi/starSchema.png" />
 
 ---
 
